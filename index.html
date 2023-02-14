@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="https://openlayers.org/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Using OpenLayers with Vite</title>
+    <link rel="stylesheet" href="./micromodal.css">
+  </head>
+  <body>
+    <div class="parent">
+        <div class="div1 cell">
+          <div class="title">
+            Finances
+          </div>
+          <div id="finances">
+            <div class="divF1">$10.0 B</div>
+            <div class="divF2"><img class="icon" src="./icons/bank.svg" /> <span id="loanAmt"></span> </div>
+            <div class="divF3"><img class="icon" src="./icons/cashier.svg" /> <span id="profitAmt"></span></div>
+          </div>
+        </div>
+        <div class="div2 cell">
+          <div class="title">
+            Riders
+          </div>
+          <div id="riders">
+            <div class="divR1">107.2 M</div>
+            <div class="divR2">10 KM</div>
+            <div class="divR3">6 Miles</div>
+          </div>
+        </div>
+        <div class="div3 cell">
+          <div class="title">
+            Info
+          </div>
+          <div id="infoParent">
+            <div id="info">
+              <select id="gameAnimation">
+                <option value="game">Game Speed</option>
+                <option value="animation">Animation Speed</option>
+              </select>: <input type="range" min="0" max="10" value="5" id="spd"/><input type="range" min="0" max="7" value="0" id="aspd"/>
+              <div id="showSpeed">1 game year = 1 day</div>
+              <div id="currentDay">Jan. 1, 1900</div>
+            </div>
+            <div class="divInfo2"><button id="btnHelp">Help</button></div>
+            <div class="divInfo3"><button id="btnFormulas">Formulas</button></div>
+          </div>
+        </div>
+        
+        <div class="div5 cell" id="lineDiv">
+          <div class="title">
+            Lines <span class="closeBtn"><button id="btnJourney"><img class="icon" src="./icons/person.svg" /></button></span>
+          </div>
+          <div class="lineSummary divLine bg2">
+            <div class="divL1">Line Name</div>
+            <div class="divL2">Start ↔ Finish</div>
+            <div class="divL3">Riders</div><div class="divL4">Freq</div>
+            <div class="divL5">Profit</div><div class="divL6">Max</div>
+            <div class="divL7"></div>
+          </div>
+          <div id="lines">
+            
+          </div>
+          <div class="foot">
+            <button id="btnAddLine">Add Line</button>
+          </div>
+        </div>
+        <div class="div5 cell" id="journeyDiv">
+          <div class="title">
+            Journey <span class="closeBtn"><button id="btnLines"><img class="icon" src="./icons/train.svg" /></button></span>
+          </div>
+          <div class="journeySummary divJourney bg2">
+            <div class="divJ1">Station</div>
+            <div class="divJ2">Arr.</div>
+            <div class="divJ3">Dep.</div>
+          </div>
+          <div id="journey">
+            
+          </div>
+          <div class="foot">
+            <button id="btnAddPerson">Add Person</button>
+          </div>
+        </div>
+        <div class="div4 cell" id="mapContainer">
+
+          <div class="title">
+            Map <span class="closeBtn"><button id="btnMapFull"><img class="icon" src="./icons/maximize.svg" /><img class="icon" src="./icons/minimize.svg" /></button></span>
+          </div>
+          <div id="map">
+
+          </div>
+        </div>
+    </div>
+    <div class="micromodal" id="modal-1" aria-hidden="true">
+      <div class="micromodal__overlay" tabindex="-1" data-micromodal-close>
+        <div class="micromodal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+          <div class="cell">
+            <div class="title">
+              Edit Line <span class="closeBtn"><button aria-label="Close modal" data-micromodal-close>X</button></span>
+            </div>
+            <div>
+              <details open="">
+                <summary class="bg2">On Path</summary>
+                <div id="pathStations"></div>
+              </details>
+            </div>
+            <div>
+              <details open="">
+                <summary class="bg2">Other Connections</summary>
+                <div id="connectedStations"></div>
+              </details>
+            </div>
+            <hr />
+            Name: <input type="text" id="lineName" value=""/>
+            <br />
+            Color: <input type="color" id="lineColor" value="#888888"/>
+            <br />
+            Animate: <input type="checkbox" id="lineAnimate" />
+            <br />
+            Frequency: <input type="number" id="lineFreq" value="20" min="1" max="1000" step="1"/>
+            <br />
+            Delete: <input type="text" id="lineDelete" value="" placeholder="type DELETE to delete" />
+            <hr />
+            <button class="end" id="btnConfirm">Confirm Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="micromodal" id="modal-buy" aria-hidden="true">
+      <div class="micromodal__overlay" tabindex="-1" data-micromodal-close>
+        <div class="micromodal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+          <div class="cell">
+            <div class="title">
+              Build Tracks <span class="closeBtn"><button aria-label="Close modal" data-micromodal-close>X</button></span>
+            </div>
+            <div id="pendingStations">
+              
+            </div>
+            <div>
+              Do you want to build this track for <span id="trackCost"></span>?
+            </div>
+            <hr />
+            <button class="end" id="modalBuyTrack">Buy</button>
+            <button class="end" id="modalDeleteTrack">Delete</button>
+            <button class="end" id="modalDNTrack">Do Nothing</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="micromodal" id="modal-trackInfo" aria-hidden="true">
+      <div class="micromodal__overlay" tabindex="-1" data-micromodal-close>
+        <div class="micromodal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+          <div class="cell">
+            <div class="title">
+              Track Info <span class="closeBtn"><button aria-label="Close modal" data-micromodal-close>X</button></span>
+            </div>
+            <div id="trackStations">
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="micromodal" id="modal-help" aria-hidden="true">
+      <div class="micromodal__overlay" tabindex="-1" data-micromodal-close>
+        <div class="micromodal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+          <div class="cell help-div">
+            <div class="title">
+              Help <span class="closeBtn"><button aria-label="Close modal" data-micromodal-close>X</button></span>
+            </div>
+            <p>
+            The goal of <b>One More Station</b> is to create the train network of your dreams.
+            Draw a curve on the map to create some tracks, set the stations for stops, and start earning some money.
+            After a few years reinvest your profits to build more tracks.
+            </p>
+            <details class="helpDetails">
+              <summary>Drawing Tracks</summary>
+              <p>Click the Draw button in the top left of the map to activate drawing mode.
+                When drawing mode is active this button will be shaded red.</p>
+              <p>Then draw a curve on the map using your mouse, finger, or stylus.</p>
+              <hr />
+              <p>Cities will have circles around them. Any circle that your path passes through will be a potential stop.
+                Make sure to pass through each city you want to become a stop because adding more stops requires new tracks.</p>
+              <p>You might need to zoom in to see all the stations, but you can build in sections as tracks are automatically connected at shared stations.</p>
+              <hr />
+              <p>After drawing the curve or curves, click on a curve to display a popup.
+                You can then choose to build the track for a fee or delete.
+                Once you have bought some tracks you can use them to create some lines.</p>
+              
+            </details>
+            <details class="helpDetails">
+              <summary>Adding Lines</summary>
+              <p>Click the Add Line button at the bottom of the Lines box on the right.
+              A popup will be displayed to create a new line. Select the checkboxes you want to become stops.
+              </p>
+              <p>
+              Each stop creates a delay of a few minutes but adds more potential customers so choose wisely (you can easily add or edit the line later).
+              Choose a name for your line and set the frequency of trains per day.
+              Confirm your changes and the new line will appear in the box on the right.
+              </p>
+              <p>
+              Some stats about each line will be computed.
+              You can click the pencil icon on the left of each line to edit the stops or click the + icon to see more info about the schedule.
+              </p>
+            </details>
+            <details class="helpDetails">
+              <summary>Data</summary>
+              <p>
+              The Finances box displays how much money you currently have.
+              The L: box displays how much you owe in loans. The P: box displays your currently yearly operating profit (revenue - costs, ignoring loan payments).
+              </p><p>
+              The Riders box displays the total number of riders per year.
+              The boxes below display the cumulative number of kms (or miles) ridden by your passengers each year.
+              </p><p>
+              The four boxes for each line include riders (people per year), freq (trains per day), profit (dollars per year), and max (the largest number of people on one train for some part of the line).
+              The info for each stop includes time (hours:minutes to reach that stop from the initial), dist (km since the previous stop), and riders (total people each day on the segment ending at that stop).
+              </p>
+            </details>
+            <details class="helpDetails">
+              <summary>Animations</summary>
+              <p>
+              In the info box you can change the game speed. Or change the animation speed. When creating/editing a line, check the animation box to animate that line. 
+              </p><p>
+              Watch a person travel your network of trains. In the Lines box, click the person button in the top right to switch the display.
+              Then create a person and set their destination.
+              </p><p>
+              
+              </p>
+            </details>
+            <details class="helpDetails">
+              <summary>Formulas</summary>
+              <p>
+              Create a new game with customized formulas by visiting /customize.html. To learn more about the formulas, click the Formulas button in the top right info box.
+              </p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="micromodal" id="modal-finances" aria-hidden="true">
+      <div class="micromodal__overlay" tabindex="-1" data-micromodal-close>
+        <div class="micromodal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+          <div class="cell">
+            <div class="title">
+              Finances <span class="closeBtn"><button aria-label="Close modal" data-micromodal-close>X</button></span>
+            </div>
+            <div id="loans">
+              <div>
+                <details open="">
+                  <summary>Loans</summary>
+                  <table>
+                    <thead>
+                      <tr><th>Principal</th><th>Term</th><th>Rate</th><th>Yearly</th><th>Pay</th></tr>
+                    </thead>
+                    <tbody id="loanList">
+
+                    </tbody>
+                  </table>
+                </details>
+              </div>
+              <div>
+                New loan: 
+                Amount: <input type="text" id="newLoanAmt" value="0" />.
+                Term: <select id="newLoanTerm">
+                  <option value="10" selected>10 years</option>
+                  <option value="20">20 years</option>
+                  <option value="50">50 years</option>
+                  <option value="100">100 years</option>
+                </select>.
+                Rate: <span id="newLoanRate">0.03</span>.
+                Yearly Payment: <span id="newLoanPayment">0</span>.
+                <button id="newLoanSubmit">Submit</button>
+              </div>
+            </div>
+            <hr />
+            <div id="profits">
+              <div>
+                <details open="">
+                  <summary>Lines</summary>
+                  <table>
+                    <thead>
+                      <tr><th>Name</th><th>Profit</th><th>Riders</th><th>Rev</th><th>Seat Costs</th><th>Rider Costs</th><th>Connects</th></tr>
+                    </thead>
+                    <tbody id="lineList">
+
+                    </tbody>
+                  </table>
+                </details>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="micromodal" id="modal-formulas" aria-hidden="true">
+      <div class="micromodal__overlay" tabindex="-1" data-micromodal-close>
+        <div class="micromodal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+          <div class="cell formula-div">
+            <div class="title">
+              Formulas <span class="closeBtn"><button aria-label="Close modal" data-micromodal-close>X</button></span>
+            </div>
+            <p>
+            To start a new game with customized formulas, visit /customize.html.
+            </p>
+            <details class="helpDetails">
+              <summary>Ridership</summary>
+              <p></p>
+              <p></p>
+              <p></p>
+              
+            </details>
+            <details class="helpDetails">
+              <summary>Operating Profit</summary>
+              <p>
+              </p>
+              <p>
+              </p>
+              <p>
+              </p>
+            </details>
+            <details class="helpDetails">
+              <summary>Fixed Costs</summary>
+              <p></p>
+              <p></p>
+              <p></p>
+            </details>
+            <details class="helpDetails">
+              <summary>Timing</summary>
+              <p></p>
+              <p></p>
+              <p></p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="micromodal" id="modal-journey" aria-hidden="true">
+      <div class="micromodal__overlay" tabindex="-1" data-micromodal-close>
+        <div class="micromodal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+          <div class="cell">
+            <div class="title">
+              Formulas <span class="closeBtn"><button aria-label="Close modal" data-micromodal-close>X</button></span>
+            </div>
+            <div>
+              Name: <input type="text" id="personName"/>
+              <div>
+                Current Location: <span id="personLocation"></span>
+              </div>
+              <div>
+                Set new destination:
+                <div id="journeyConnected">
+
+                </div>
+              </div>
+              <div>
+                Instant? <input type="checkbox" />
+              </div>
+              <button>Confirm</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js" integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI" crossorigin="anonymous"></script>
+    <script src="./micromodal.js"></script>
+    
+    <script type="module" src="./main.js"></script>
+    <script src="./display-logic.js"></script>
+    <script type="module" src="./train-logic.js"></script>
+    <script>
+      function callDaily(){
+        Train.everyDay();
+      }
+      function userAction(){
+        Train.maintenance = 0;
+      }
+      function repayLoan(evt){
+        var el = evt.currentTarget;
+        if (!el){return}
+        if (el.classList.contains('disabled')){
+          alert('You do not have enough funds to repay this loan.')
+        }
+        else {
+          var idx = parseInt(el.getAttribute('name'));
+          Train.repayLoan(idx);
+          updateFinances();
+          Train.save();
+        }
+        
+      }
+      function chgJourney(evt){
+        var el = evt.currentTarget;
+        document.getElementById('personName').value = el.getAttribute('name');
+        var location = "";
+        var stationID = -1;
+        if (el.getAttribute('data-start') && Train.stations[el.getAttribute('data-start')]){
+          location = Train.stations[el.getAttribute('data-start')].name;
+          stationID = el.getAttribute('data-start');
+        }
+        document.getElementById('personLocation').textContent = location;
+        
+        var el = document.getElementById('journeyConnected');
+        el.innerHTML = "";
+        var cStations = [];
+        if (stationID == -1){
+          for (var n in Train.stations){
+            cStations.push([Infinity,n]);
+          }
+        }
+        else {
+          cStations = Train.getJourneyStations(stationID);
+        }
+        for (var i=0;i<cStations.length;i++){
+            var div = document.createElement('div');
+            var checkbox = document.createElement('input');
+            checkbox.setAttribute('type','radio');
+            checkbox.setAttribute('name','personDestination');
+            checkbox.setAttribute('value',cStations[i][1]);
+            checkbox.checked = false;
+            
+            div.appendChild(checkbox);
+            var span = document.createElement('span');
+            span.textContent = Train.stations[cStations[i][1]].name + " ("+Math.round(cStations[i][0])+" KM)";
+            div.appendChild(span);
+            el.appendChild(div);
+        }
+
+
+        MicroModal.show('modal-journey');
+      }
+      document.getElementById('modalBuyTrack').addEventListener('click', () => {
+        userAction();
+        if (document.getElementById('modalBuyTrack').classList.contains('disabled')){
+          alert('You do not have enough funds to make this purchase. Build a shorter track or take out a loan.')
+        }
+        else {
+          TrainMap.updateTracks('buy'); MicroModal.close('modal-buy');
+        }
+        
+      });
+      document.getElementById('modalDeleteTrack').addEventListener('click', () => {
+        userAction();
+        TrainMap.updateTracks('delete'); MicroModal.close('modal-buy');
+      });
+      document.getElementById('modalDNTrack').addEventListener('click', () => {
+        userAction();
+        MicroModal.close('modal-buy');
+      });
+      document.getElementById('btnAddLine').addEventListener('click', () => {
+        userAction();
+        addLine();
+      });
+      document.getElementById('btnAddPerson').addEventListener('click', () => {
+        userAction();
+        TrainMap.prepPerson("me",1159151489,true,true);
+      });
+      document.getElementById('btnMapFull').addEventListener('click', () => {
+        userAction();
+        mapFullscreen();
+      });
+      document.getElementById('btnLines').addEventListener('click', () => {
+        userAction();
+        document.getElementById('lineDiv').style.display = "block";
+        document.getElementById('journeyDiv').style.display = "none";
+      });
+      document.getElementById('btnJourney').addEventListener('click', () => {
+        userAction();
+        document.getElementById('lineDiv').style.display = "none";
+        document.getElementById('journeyDiv').style.display = "block";
+      });
+      document.getElementById('btnConfirm').addEventListener('click', () => {
+        createStops();
+      });
+      document.getElementById('btnHelp').addEventListener('click', () => {
+        userAction();
+        MicroModal.show('modal-help');
+      });
+      document.getElementById('btnFormulas').addEventListener('click', () => {
+        userAction();
+        MicroModal.show('modal-formulas');
+      });
+      document.getElementById('finances').addEventListener('click', () => {
+        userAction();
+        MicroModal.show('modal-finances');
+      });
+      document.getElementById('newLoanTerm').addEventListener('change', () => {
+        updateLoans();
+      });
+      document.getElementById('newLoanAmt').addEventListener('change', () => {
+        updateLoans();
+      });
+      document.getElementById('newLoanSubmit').addEventListener('click', () => {
+        
+        var p = parseFloat(document.getElementById('newLoanAmt').value);
+        var n = parseInt(document.getElementById('newLoanTerm').value);
+        var r = updateLoans()/100;
+        Train.addLoan(p,n,r);
+        document.getElementById('newLoanAmt').value = 0;
+        updateFinances();
+        Train.save();
+      });
+      document.getElementById('spd').addEventListener('input', () => {
+        var spd = parseInt(document.getElementById('spd').value);
+        var el = document.getElementById('showSpeed');
+        if (spd == 0){el.textContent = "Paused";}
+        else if (spd == 1){el.textContent = "1 year = 1 year";}
+        else if (spd == 2){el.textContent = "1 year = 1 month";}
+        else if (spd == 3){el.textContent = "1 year = 1 week";}
+        else if (spd == 4){el.textContent = "1 year = 2 days";}
+        else if (spd == 5){el.textContent = "1 year = 1 day";}
+        else if (spd == 6){el.textContent = "1 year = 12 hours";}
+        else if (spd == 7){el.textContent = "1 year = 4 hours";}
+        else if (spd == 8){el.textContent = "1 year = 1 hour";}
+        else if (spd == 9){el.textContent = "1 year = 12 minutes";}
+        else if (spd == 10){el.textContent = "1 year = 1 minute";}
+      });
+      document.getElementById('spd').addEventListener('change', () => {
+        var spd = parseInt(document.getElementById('spd').value);
+        Train.timings.sr = spd;
+        Train.timings.spd = Train.srToSPD(spd);
+
+        console.log(Train.timings.spd);
+        clearInterval(Train.gameInterval);
+        callDaily();
+        Train.gameInterval = setInterval(callDaily,1000*Train.timings.spd/24);
+        Train.save();
+      });
+      document.getElementById('aspd').addEventListener('input', () => {
+        var spd = parseInt(document.getElementById('aspd').value);
+        var el = document.getElementById('showSpeed');
+        if (spd == 0){el.textContent = "No Animation";}
+        else if (spd == 1){el.textContent = "1 day = 1 day";}
+        else if (spd == 2){el.textContent = "1 day = 2 hours";}
+        else if (spd == 3){el.textContent = "1 day = 28 minutes";}
+        else if (spd == 4){el.textContent = "1 day = 8 minutes";}
+        else if (spd == 5){el.textContent = "1 day = 4 minutes";}
+        else if (spd == 6){el.textContent = "1 day = 2 minutes";}
+        else if (spd == 7){el.textContent = "1 day = 1 minute";}
+      });
+      document.getElementById('aspd').addEventListener('change', () => {
+        var spd = parseInt(document.getElementById('aspd').value);
+        
+        TrainMap.animationSPD = Train.srToSPD(spd);
+        if (TrainMap.animationSPD < 60){
+          TrainMap.animationSPD = 60;
+        }
+        TrainMap.prepAnimation();
+      });
+      document.getElementById('gameAnimation').addEventListener('change', () => {
+        if (document.getElementById('gameAnimation').value == "game"){
+          document.getElementById('aspd').style.display = "none";
+          document.getElementById('spd').style.display = "inline-block";
+        }
+        else {
+          document.getElementById('spd').style.display = "none";
+          document.getElementById('aspd').style.display = "inline-block";
+        }
+      });
+      document.getElementById('gameAnimation').addEventListener('input', () => {
+        if (document.getElementById('gameAnimation').value == "game"){
+          document.getElementById('aspd').style.display = "none";
+          document.getElementById('spd').style.display = "inline-block";
+        }
+        else {
+          document.getElementById('spd').style.display = "none";
+          document.getElementById('aspd').style.display = "inline-block";
+        }
+      });
+
+      
+    </script>
+    <script>
+      const socket = io("http://localhost:3246");
+      socket.on('connect', () => {
+        socket.emit('pops',{})
+      })
+      socket.on('pops', (msg) => {
+        console.log(msg);
+        Train.chgPops(msg);
+        Train.calculateNetworks();
+        updateDashboard();
+      })
+      
+    </script>
+  </body>
+</html>

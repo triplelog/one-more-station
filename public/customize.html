@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+    <link rel="stylesheet" href="./style2.css">
+    <style>
+    </style>
+  </head>
+  <body>
+    <div class="parent">
+      <div class="div1 cell">
+        <div class="title">
+          Play
+        </div>
+        <div class="content">
+          <div>
+            <button style="padding: 1rem;" onclick="checkGame();">Play</button>
+          </div>
+        </div>
+      </div>
+        <div class="div2 cell">
+          <div class="title">
+            Ridership
+          </div>
+          <div class="content">
+            <details class="inputs">
+                <summary>Inputs</summary>
+                <div>
+                    <b>time</b>: total travel time to final destination
+                </div>
+                <div>
+                    <b>popA</b>: population (in millions) within 50 km of departure station
+                </div>
+                <div>
+                    <b>popB</b>: population (in millions) within 50 km of arrival station
+                </div>
+            </details>
+            <div class="formula">
+                Riders per year (millions):
+                <div>
+                    <textarea id="ridershipFormula" rows="1" class="formulaTextarea" ></textarea>
+                </div> 
+            </div>
+          </div>
+          <div class="foot">
+            <button onclick="revertRidership(true)">Default</button>
+            <button onclick="revertRidership()">Revert</button>
+            <button onclick="saveRidership()" id="saveRidershipBtn">Save</button>
+          </div>
+        </div>
+        <div class="div3 cell">
+          <div class="title">
+            Timing
+          </div>
+          <div class="content">
+            <details class="inputs">
+                <summary>Inputs</summary>
+                <div>
+                  <b>frequency</b>: trains per day of the departing line (available for waitTime)
+                </div>
+                <div>
+                  <b>maintenance</b>: time (years, game time) since last action (available for trainSpeed)
+                </div>
+                    
+            </details>
+            <div class="formula">
+                trainSpeed (kph):
+                <div>
+                    <textarea id="trainSpeedFormula" rows="1" class="formulaTextarea" ></textarea>
+                </div>
+                waitTime (minutes, when switching trains):
+                <div>
+                    <textarea id="waitTimeFormula" rows="1" class="formulaTextarea" ></textarea>
+                </div>
+                stopTime (minutes):
+                <div>
+                    <textarea id="stopTimeFormula" rows="1" class="formulaTextarea" ></textarea>
+                </div>
+                driveTime (minutes to drive to/from station):
+                <div>
+                    <textarea id="driveTimeFormula" rows="1" class="formulaTextarea"></textarea>
+                </div>
+            </div>
+            
+            
+          </div>
+          <div class="foot">
+            <button onclick="revertTiming(true)">Default</button>
+            <button onclick="revertTiming()">Revert</button>
+            <button onclick="saveTiming()" id="saveTimingBtn">Save</button>
+          </div>
+        </div>
+        <div class="div4 cell">
+          <div class="title">
+            Finances
+          </div>
+          <div class="content">
+            <details class="inputs">
+                <summary>Inputs</summary>
+                All are available for Loan Rate Formula
+                <div>
+                    <b>borrowed</b>: current total of loans
+                </div>
+                <div>
+                    <b>cash</b>: current cash level
+                </div>
+                <div>
+                  <b>profit</b>: yearly operating profit
+                </div>
+                <div>
+                    <b>term</b>: length of loan in years
+                </div>
+            </details>
+            <div class="formula">
+              Initial Cash:
+              <div>
+                  <textarea id="cashValue" rows="1" class="formulaTextarea" >0</textarea>
+              </div>
+              <div style="border: 1px solid black;">
+                <div>
+                  Inital Loan Amount: <textarea id="loanAmount" rows="1" class="formulaTextarea" >100000000000</textarea>
+                </div>
+                <div>
+                  Term (Years): <textarea id="loanTerm" rows="1" class="formulaTextarea" >100</textarea>
+                </div>
+                <div>
+                  Rate (APR %): <textarea id="loanRate" rows="1" class="formulaTextarea" >1</textarea>
+                </div>
+              </div>
+              <div style="border: 1px solid black;">
+                Loan Rate Formula:
+                <div>
+                  <textarea id="loanRateFormula" rows="1" class="formulaTextarea" ></textarea>
+                </div>
+                (Min, Max) Rate:
+                <div>
+                  <textarea id="loanRateMinMax" rows="1" class="formulaTextarea" ></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="foot">
+            <button onclick="revertFinances(true)">Default</button>
+            <button onclick="revertFinances()">Revert</button>
+            <button onclick="saveFinances()" id="saveFinancesBtn">Save</button>
+          </div>
+        </div>
+        <div class="div5 cell">
+          <div class="title">
+            Fixed Costs
+          </div>
+          <div class="content">
+            <details class="inputs">
+                <summary>Inputs</summary>
+                <div>
+                    <b>gdp</b>: gdp per capita of country (available for all 3)
+                </div>
+                <div>
+                    <b>riders</b>: departures plus arrivals per year at station (available for stationCost)
+                </div>
+                <div>
+                    <b>distance</b>: length (km) of bridge (available for bridgeCost)
+                </div>
+                    
+            </details>
+            <div class="formula">
+                trackCost (per km):
+                <div>
+                    <textarea id="trackCostFormula" rows="1" class="formulaTextarea" ></textarea>
+                </div>
+                bridgeCost (per bridge):
+                <div>
+                    <textarea id="bridgeCostFormula" rows="1" class="formulaTextarea" ></textarea>
+                </div>
+                stationCost:
+                <div>
+                    <textarea id="stationCostFormula" rows="1" class="formulaTextarea" ></textarea>
+                </div> 
+            </div>
+            
+          </div>
+          <div class="foot">
+            <button onclick="revertCosts(true)">Default</button>
+            <button onclick="revertCosts()">Revert</button>
+            <button onclick="saveCosts()" id="saveCostsBtn">Save</button>
+          </div>
+        </div>
+        
+        <div class="div6 cell">
+          <div class="title">
+            Operating Profit
+          </div>
+          <div class="content">
+            <details class="inputs">
+                <summary>Inputs</summary>
+                <div>
+                    <b>gdp</b>: gdp per capita of country (available for all 3)
+                </div>
+                <div>
+                    <b>cityDistance</b>: great circle distance (km) between stations (available for ticketPrice)
+                </div>
+                <div>
+                    <b>trackDistance</b>: track length (km) between stations (available for ticketPrice)
+                </div>
+            </details>
+            <div class="formula">
+                seatCost (per km):
+                <div>
+                    <textarea id="seatCostFormula" rows="1" class="formulaTextarea" ></textarea>
+                </div>
+                riderCost (per km):
+                <div>
+                    <textarea id="riderCostFormula" rows="1" class="formulaTextarea" ></textarea>
+                </div>
+                ticketPrice:
+                <div>
+                    <textarea id="ticketPriceFormula" rows="1" class="formulaTextarea" ></textarea>
+                </div> 
+            </div>
+          </div>
+          <div class="foot">
+            <button onclick="revertProfits(true)">Default</button>
+            <button onclick="revertProfits()">Revert</button>
+            <button onclick="saveProfits()" id="saveProfitsBtn">Save</button>
+          </div>
+        </div>
+
+        
+
+        
+    </div>
+    
+
+    
+
+    <script src="./mathzetta.js"></script>
+    <script src="./create.js"></script>
+    <script >
+      function startGame(){
+        
+        
+        window.localStorage.setItem("initialSettings",JSON.stringify(initialSettings));
+        for (var key in functionStrings){
+          window.localStorage.setItem("functionStrings-"+key,functionStrings[key]);
+        }
+        window.localStorage.setItem('keepGame',"false");
+        window.location.href = "./index.html";
+      }
+      function checkGame() {
+        var isSaved = true;
+        for (var i in unsaved){
+          if (unsaved[i]){
+            isSaved = false;
+            break;
+          }
+        }
+        if (isSaved){
+          if (window.localStorage.getItem('keepGame') && window.localStorage.getItem('keepGame') != "false"){
+            if (confirm("Creating a new game will erase your current game. Are you sure you want to start a new game?")){
+              startGame();
+            }
+          }
+          else {
+            startGame();
+          }
+        }
+        else {
+          alert('You have unsaved changes. Either save them or revert to previously saved settings before starting a new game.')
+        }
+      }
+      
+    </script>
+  </body>
+</html>
